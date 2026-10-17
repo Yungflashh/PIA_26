@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I'm Attending · Praise In Advance '26</title>
+<meta name="description" content="Put your photo on the Praise In Advance '26 flyer and share it. Tower of Victory Church Int'l, Fri 20 Nov, Ikorodu.">
+<meta property="og:title" content="I'm attending Praise In Advance '26">
+<meta property="og:description" content="Put your photo on the flyer and share it. Fri 20 Nov · TVC Auditorium, Ikorodu · Free entry.">
+<meta property="og:image" content="flyer.jpg">
+<meta name="theme-color" content="#0a0d26">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d26;
+    --bg-2: #11153a;
+    --line: rgba(255, 255, 255, .12);
+    --gold: #f4c542;
+    --pink: #ff3d9a;
+    --text: #f5f3ee;
+    --muted: #9da1c4;
+    --display: Anton, Impact, "Arial Narrow", sans-serif;
+    --body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+
+  /* Top bar */
+  .bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 18px 0; border-bottom: 1px solid var(--line);
+    font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .bar b { font-weight: 700; }
+  .bar span { color: var(--muted); }
+
+  /* Heading */
+  .intro { padding: 48px 0 28px; display: grid; gap: 14px; }
+  .kicker { color: var(--gold); font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  h1 {
+    margin: 0; font: 400 clamp(56px, 11vw, 132px)/.88 var(--display);
+    text-transform: uppercase; letter-spacing: -.005em;
+  }
+  h1 em { font-style: normal; color: var(--pink); }
+  .lede { margin: 6px 0 0; max-width: 34ch; color: var(--muted); font-size: 18px; }
+
+  /* Main maker */
+  .maker { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; align-items: start; padding-bottom: 64px; }
+  .stage { position: relative; border-radius: 6px; overflow: hidden; background: var(--bg-2); }
+  canvas { display: block; width: 100%; height: auto; touch-action: none; }
+  canvas.can-drag { cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+  .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 15px; background: var(--bg-2); }
+
+  .steps { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .step { padding: 22px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 44px 1fr; gap: 4px 0; }
+  .num { font: 400 22px/1.1 var(--display); color: var(--muted); }
+  .step h2 { margin: 0; font-size: 17px; font-weight: 700; }
+  .step p { grid-column: 2; margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+  .step .act { grid-column: 2; margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .step.is-done .num { color: var(--gold); }
+
+  .btn {
+    appearance: none; border: 0; border-radius: 4px; cursor: pointer;
+    font: 700 15px/1 var(--body); padding: 15px 22px; min-height: 48px;
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--gold); color: #17120a;
+    transition: transform .12s ease, background-color .12s ease, opacity .12s ease;
+  }
+  .btn:hover { background: #ffd65c; }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+  .btn.alt { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
+  .btn.alt:hover { box-shadow: inset 0 0 0 1px var(--text); background: transparent; }
+  .btn.pink { background: var(--pink); color: #fff; }
+  .btn.pink:hover { background: #ff5aab; }
+  .btn[disabled] { opacity: .35; cursor: not-allowed; transform: none; }
+  .btn.small { min-height: 40px; padding: 10px 14px; font-size: 14px; }
+
+  .zoom { display: flex; align-items: center; gap: 12px; width: 100%; }
+  .zoom label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .zoom input { flex: 1; accent-color: var(--gold); min-width: 0; }
+  .step[data-step="2"] .act[aria-disabled="true"] { opacity: .35; pointer-events: none; }
+
+  .hint { margin: 18px 0 0; font-size: 14px; color: var(--muted); min-height: 3em; }
+  .hint.ok { color: var(--gold); }
+  .privacy { margin: 12px 0 0; font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
+  .privacy svg { width: 15px; height: 15px; flex: none; margin-top: 3px; }
+  .hidden { display: none !important; }
+
+  /* Event facts */
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .fact { padding: 26px 20px 26px 0; }
+  .fact + .fact { padding-left: 20px; border-left: 1px solid var(--line); }
+  .fact dt { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .fact dd { margin: 0; font: 400 28px/1.05 var(--display); text-transform: uppercase; }
+  .fact dd small { display: block; font: 500 14px/1.4 var(--body); text-transform: none; color: var(--muted); margin-top: 6px; }
+
+  .lineup { padding: 40px 0; display: grid; grid-template-columns: 200px 1fr; gap: 20px; border-bottom: 1px solid var(--line); }
+  .lineup h3 { margin: 0; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  .lineup p { margin: 0; font: 400 clamp(22px, 3vw, 34px)/1.2 var(--display); text-transform: uppercase; }
+  .lineup p span { color: var(--muted); }
+
+  footer { padding: 32px 0 48px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 14px; }
+  footer a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--line); }
+  footer a:hover { border-color: var(--text); }
+  footer .tag { color: var(--gold); font-weight: 700; }
+
+  .credit {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px;
+    margin: 0 0 32px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 6px;
+    color: var(--muted); font-size: 14px; text-decoration: none;
+    transition: border-color .15s ease, background-color .15s ease;
+  }
+  .credit:hover { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.03); }
+  .credit b { display: inline-flex; align-items: center; gap: 8px; color: #25d366; font-weight: 700; white-space: nowrap; }
+  .credit svg { width: 18px; height: 18px; }
+
+  @media (max-width: 900px) {
+    .maker { grid-template-columns: 1fr; gap: 24px; }
+    .facts { grid-template-columns: 1fr 1fr; }
+    .fact:nth-child(3) { padding-left: 0; border-left: 0; }
+    .fact:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .lineup { grid-template-columns: 1fr; gap: 10px; }
+  }
+  @media (max-width: 520px) {
+    .container { padding: 0 16px; }
+    .bar span.where { display: none; }
+    .intro { padding: 32px 0 20px; }
+    .lede { font-size: 16px; }
+    .fact { padding: 20px 12px 20px 0; }
+    .fact + .fact { padding-left: 12px; }
+    .fact:nth-child(3) { padding-left: 0; }
+    .fact dd { font-size: 22px; }
+    .stage { margin: 0 -16px; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="bar">
+    <b>Tower of Victory Church Int'l</b>
+    <span class="where">Erunwen, Ikorodu</span>
+  </div>
+
+  <section class="intro">
+    <div class="kicker">Praise In Advance '26 · Fri 20 Nov</div>
+    <h1>I'm <em>attending.</em></h1>
+    <p class="lede">Put your face on the flyer, post it on your status, and bring someone along.</p>
+  </section>
+
+  <section class="maker">
+    <div class="stage">
+      <canvas id="canvas" aria-label="Flyer preview with your photo"></canvas>
+      <div class="loading" id="loading">Loading flyer…</div>
+    </div>
+
+    <div>
+      <ol class="steps">
+        <li class="step" data-step="1">
+          <span class="num">01</span>
+          <h2>Add your photo</h2>
+          <p>A clear, front-facing picture works best.</p>
+          <div class="act">
+            <button class="btn" id="pickBtn" type="button">Choose photo</button>
+          </div>
+        </li>
+        <li class="step" data-step="2">
+          <span class="num">02</span>
+          <h2>Fit it in the frame</h2>
+          <p>Drag the photo to move it. Zoom to get closer.</p>
+          <div class="act" id="adjustRow" aria-disabled="true">
+            <div class="zoom">
+              <label for="zoom">Zoom</label>
+              <input type="range" id="zoom" min="1" max="4" step="0.01" value="1">
+              <button class="btn alt small" id="resetBtn" type="button">Reset</button>
+            </div>
+          </div>
+        </li>
+        <li class="step" data-step="3">
+          <span class="num">03</span>
+          <h2>Save and share</h2>
+          <p>Post it with <b>#tvcpraiseinadvance'26</b></p>
+          <div class="act">
+            <button class="btn pink" id="downloadBtn" type="button" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+              Download
+            </button>
+            <button class="btn alt hidden" id="shareBtn" type="button">Share</button>
+          </div>
+        </li>
+      </ol>
+      <p class="hint" id="hint" aria-live="polite"></p>
+      <p class="privacy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        Your photo never leaves your phone. Nothing is uploaded or stored.
+      </p>
+      <input type="file" id="file" accept="image/*,.heic,.heif" class="hidden">
+    </div>
+  </section>
+
+  <dl class="facts">
+    <div class="fact"><dt>Date</dt><dd>Fri 20 Nov<small>2026</small></dd></div>
+    <div class="fact"><dt>Red carpet</dt><dd>7:00 PM<small>Come dressed for it</small></dd></div>
+    <div class="fact"><dt>Concert</dt><dd>8:00 PM<small>Worship, praise, word, drama, dance</small></dd></div>
+    <div class="fact"><dt>Entry</dt><dd>Free<small>Bring a friend</small></dd></div>
+  </dl>
+
+  <section class="lineup">
+    <h3>Ministering</h3>
+    <p>Impactor Daniel <span>/</span> Evang. Ruth <span>/</span> Evang. Friday <span>/</span> Jesu Baby <span>/</span> Segun Victory <span>/</span> Asksfemzy <span>/</span> Mr B</p>
+  </section>
+
+  <footer>
+    <div>Church Auditorium, No 3, TVC Bus-Stop,<br>Erunwen, Ikorodu, Lagos</div>
+    <div>
+      Sponsorship &amp; info:
+      <a href="tel:07059514800">0705 951 4800</a>,
+      <a href="tel:09159710342">0915 971 0342</a>,
+      <a href="https://wa.me/2348067521758">0806 752 1758 (WhatsApp)</a>
+    </div>
+    <div class="tag">#tvcpraiseinadvance'26</div>
+  </footer>
+
+  <a class="credit" href="https://wa.me/2349058949877?text=Hi!%20I%20just%20used%20the%20TVC%20Praise%20In%20Advance%20%2726%20photo%20flyer%20page%20and%20I%20love%20it.%20I%27d%20like%20something%20like%20this%20for%20my%20church%2Fevent.%20Can%20we%20talk%3F" target="_blank" rel="noopener">
+    <span>Want a page like this for your church or event?</span>
+    <b>
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.8-1.2.2-.6.2-1.1.1-1.2l-.5-.3Z"/></svg>
+      Chat on WhatsApp
+    </b>
+  </a>
+</div>
+
+<script src="flyer.js"></script>
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const fileInput = document.getElementById('file');
+  const pickBtn = document.getElementById('pickBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const shareBtn = document.getElementById('shareBtn');
+  const adjustRow = document.getElementById('adjustRow');
+  const zoomInput = document.getElementById('zoom');
+  const resetBtn = document.getElementById('resetBtn');
+  const hint = document.getElementById('hint');
+  const loading = document.getElementById('loading');
+
+  let template = null;   // canvas: flyer with the white photo area made transparent
+  let hole = null;       // {x, y, w, h} of the photo area in flyer pixels
+  let photo = null;      // the user's image
+  let zoom = 1, offX = 0, offY = 0; // photo transform, offsets in flyer pixels
+
+  const isWhite = (d, i) => d[i] > 235 && d[i + 1] > 235 && d[i + 2] > 235;
+
+  // Find the white photo box by growing outward from a point known to be inside it.
+  function findHole(data, W, H) {
+    const d = data.data;
+    const sx = Math.round(W * 0.198), sy = Math.round(H * 0.5);
+    const white = (x, y) => isWhite(d, (y * W + x) * 4);
+    let x0 = sx, x1 = sx, y0 = sy, y1 = sy;
+    while (x0 > 0 && white(x0 - 1, sy)) x0--;
+    while (x1 < W - 1 && white(x1 + 1, sy)) x1++;
+    const cx = Math.round((x0 + x1) / 2);
+    while (y0 > 0 && white(cx, y0 - 1)) y0--;
+    while (y1 < H - 1 && white(cx, y1 + 1)) y1++;
+    return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+  }
+
+  function prepareTemplate(img) {
+    const W = img.naturalWidth, H = img.naturalHeight;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const cx = c.getContext('2d');
+    cx.drawImage(img, 0, 0);
+    const full = cx.getImageData(0, 0, W, H);
+    hole = findHole(full, W, H);
+
+    // Punch the white box (plus a few pixels of soft edge) out of the flyer,
+    // so the photo shows through behind the gold frame.
+    const pad = 6;
+    const rx = Math.max(0, hole.x - pad), ry = Math.max(0, hole.y - pad);
+    const rw = Math.min(W - rx, hole.w + pad * 2), rh = Math.min(H - ry, hole.h + pad * 2);
+    const region = cx.getImageData(rx, ry, rw, rh);
+    const d = region.data;
+    for (let y = 0; y < rh; y++) {
+      for (let x = 0; x < rw; x++) {
+        const i = (y * rw + x) * 4;
+        const inside = rx + x >= hole.x && rx + x < hole.x + hole.w && ry + y >= hole.y && ry + y < hole.y + hole.h;
+        const m = Math.min(d[i], d[i + 1], d[i + 2]);
+        if (inside) d[i + 3] = 0;
+        else if (m > 200) d[i + 3] = Math.round(255 * (1 - (m - 200) / 55)); // fade off-white edge pixels
+      }
+    }
+    cx.putImageData(region, rx, ry);
+
+    template = c;
+    canvas.width = W; canvas.height = H;
+  }
+
+  function baseScale() {
+    // Scale that makes the photo just cover the hole.
+    return Math.max(hole.w / photo.width, hole.h / photo.height);
+  }
+
+  function clampOffsets() {
+    const s = baseScale() * zoom;
+    const maxX = Math.max(0, (photo.width * s - hole.w) / 2);
+    const maxY = Math.max(0, (photo.height * s - hole.h) / 2);
+    offX = Math.min(maxX, Math.max(-maxX, offX));
+    offY = Math.min(maxY, Math.max(-maxY, offY));
+  }
+
+  function draw() {
+    if (!template) return;
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    if (photo) {
+      const s = baseScale() * zoom;
+      const pw = photo.width * s, ph = photo.height * s;
+      const cx = hole.x + hole.w / 2 + offX, cy = hole.y + hole.h / 2 + offY;
+      ctx.save();
+      // Slightly oversize the clip so the photo tucks under the frame's inner edge.
+      ctx.beginPath();
+      ctx.rect(hole.x - 8, hole.y - 8, hole.w + 16, hole.h + 16);
+      ctx.clip();
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(photo, cx - pw / 2, cy - ph / 2, pw, ph);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(hole.x - 8, hole.y - 8, hole.w + 16, hole.h + 16);
+      ctx.fillStyle = '#9da1c4';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = `500 ${Math.round(hole.w / 11)}px 'DM Sans', sans-serif`;
+      ctx.fillText('Your photo', hole.x + hole.w / 2, hole.y + hole.h / 2 - hole.w / 14);
+      ctx.fillText('goes here', hole.x + hole.w / 2, hole.y + hole.h / 2 + hole.w / 14);
+    }
+    ctx.drawImage(template, 0, 0);
+  }
+
+  // Load the user's file, respecting phone camera orientation.
+  const isHeic = file => /hei[cf]/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+
+  function decodeWithImg(blob) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(blob);
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = () => { URL.revokeObjectURL(url); rej(new Error('img decode failed')); };
+      i.src = url;
+    });
+  }
+
+  // Try each way the browser can open a picture, most accurate first.
+  async function decode(blob) {
+    if ('createImageBitmap' in window) {
+      try { return await createImageBitmap(blob, { imageOrientation: 'from-image' }); } catch (e) {}
+      try { return await createImageBitmap(blob); } catch (e) {}
+    }
+    return decodeWithImg(blob);
+  }
+
+  // iPhone HEIC photos: Chrome/Firefox can't open these, so convert to JPG first.
+  function loadScript(src) {
+    return new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = res;
+      s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function loadHeicConverter() {
+    if (window.heic2any) return;
+    try { await loadScript('heic2any.min.js'); }
+    catch (e) { await loadScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js'); }
+  }
+
+  async function loadPhoto(file) {
+    if (!file || !(file.type.startsWith('image/') || isHeic(file))) {
+      hint.textContent = 'Please choose a picture file (JPG, PNG or HEIC).';
+      return;
+    }
+    hint.textContent = 'Opening your photo…';
+    try {
+      let img;
+      try {
+        img = await decode(file);
+      } catch (e) {
+        if (!isHeic(file)) throw e;
+        hint.textContent = 'Converting your iPhone photo. This takes a few seconds…';
+        await loadHeicConverter();
+        const out = await window.heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+        img = await decode(Array.isArray(out) ? out[0] : out);
+      }
+      photo = img;
+      zoom = 1; offX = 0; offY = 0; zoomInput.value = 1;
+      draw();
+      downloadBtn.disabled = false;
+      adjustRow.removeAttribute('aria-disabled');
+      document.querySelector('[data-step="1"]').classList.add('is-done');
+      document.querySelector('[data-step="2"]').classList.add('is-done');
+      canvas.classList.add('can-drag');
+      pickBtn.textContent = 'Change photo';
+      if (navigator.canShare && navigator.canShare({ files: [new File([''], 'a.jpg', { type: 'image/jpeg' })] })) {
+        shareBtn.classList.remove('hidden');
+      }
+      hint.textContent = 'Looking good. Drag or zoom until your face sits nicely in the frame.';
+      hint.classList.remove('ok');
+    } catch (e) {
+      hint.textContent = isHeic(file)
+        ? "Sorry, we couldn't convert that iPhone photo. Please check your internet connection, or take a screenshot of the photo and upload that."
+        : "Sorry, we couldn't open that picture. Please try a JPG or PNG photo.";
+    }
+  }
+
+  // Drag to move (mouse + touch via pointer events, pinch to zoom on phones).
+  const pointers = new Map();
+  let pinchStart = null;
+  const toFlyer = () => canvas.width / canvas.getBoundingClientRect().width;
+
+  canvas.addEventListener('pointerdown', e => {
+    if (!photo) { fileInput.click(); return; }
+    canvas.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    canvas.classList.add('dragging');
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      pinchStart = { dist: Math.hypot(a.x - b.x, a.y - b.y), zoom };
+    }
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!photo || !pointers.has(e.pointerId)) return;
+    const prev = pointers.get(e.pointerId);
+    const cur = { x: e.clientX, y: e.clientY };
+    pointers.set(e.pointerId, cur);
+    if (pointers.size === 2 && pinchStart) {
+      const [a, b] = [...pointers.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      setZoom(pinchStart.zoom * dist / pinchStart.dist);
+    } else if (pointers.size === 1) {
+      const k = toFlyer();
+      offX += (cur.x - prev.x) * k;
+      offY += (cur.y - prev.y) * k;
+      clampOffsets();
+      draw();
+    }
+  });
+  const endPointer = e => {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinchStart = null;
+    if (pointers.size === 0) canvas.classList.remove('dragging');
+  };
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+  canvas.addEventListener('wheel', e => {
+    if (!photo) return;
+    e.preventDefault();
+    setZoom(zoom * (e.deltaY < 0 ? 1.06 : 1 / 1.06));
+  }, { passive: false });
+
+  function setZoom(z) {
+    zoom = Math.min(4, Math.max(1, z));
+    zoomInput.value = zoom;
+    clampOffsets();
+    draw();
+  }
+
+  zoomInput.addEventListener('input', () => setZoom(parseFloat(zoomInput.value)));
+  resetBtn.addEventListener('click', () => { offX = 0; offY = 0; setZoom(1); });
+  pickBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => { loadPhoto(fileInput.files[0]); fileInput.value = ''; });
+
+  // Drop a file anywhere on the page (desktop).
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('drop', e => {
+    e.preventDefault();
+    if (template && e.dataTransfer.files[0]) loadPhoto(e.dataTransfer.files[0]);
+  });
+
+  const makeBlob = () => new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+  const fileName = 'PIAAA-I-Am-Attending.jpg';
+
+  downloadBtn.addEventListener('click', async () => {
+    const blob = await makeBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    hint.textContent = 'Saved. Now post it on WhatsApp and Instagram, and tag a friend who should come.';
+    hint.classList.add('ok');
+    document.querySelector('[data-step="3"]').classList.add('is-done');
+  });
+
+  shareBtn.addEventListener('click', async () => {
+    const blob = await makeBlob();
+    const file = new File([blob], fileName, { type: 'image/jpeg' });
+    try {
+      await navigator.share({ files: [file], text: "I am attending Praise In Advance 2026! #tvcpraiseinadvance'26" });
+    } catch (e) { /* user cancelled */ }
+  });
+
+  // Start: load the flyer.
+  const flyer = new Image();
+  flyer.onload = () => {
+    try {
+      prepareTemplate(flyer); draw(); loading.remove();
+    } catch (e) {
+      loading.textContent = 'Could not prepare the flyer. Please refresh the page.';
+    }
+  };
+  flyer.onerror = () => { loading.textContent = 'Could not load the flyer. Please refresh the page.'; };
+  // Embedded copy (flyer.js) keeps the page working when opened straight from a folder.
+  flyer.src = window.FLYER_DATA || 'flyer.jpg';
+})();
+</script>
+</body>
+</html>
